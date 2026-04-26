@@ -19,11 +19,11 @@ const Footer = () => {
             <p className="text-primary-200 text-sm mb-1">Founded by <span className="font-semibold text-white">CA Sandesh Jaiman</span></p>
             <div className="flex items-center gap-2 text-primary-200 text-sm mb-1">
               <Mail size={14} />
-              <a href="mailto:info@jaimanco.com" className="hover:text-accent-400 transition-colors">info@jaimanco.com</a>
+              <a href="mailto:jaimanandco@gmail.com" className="hover:text-accent-400 transition-colors">jaimanandco@gmail.com</a>
             </div>
             <div className="flex items-center gap-2 text-primary-200 text-sm">
               <Globe size={14} />
-              <a href="https://www.jaimanco.com" target="_blank" rel="noopener noreferrer" className="hover:text-accent-400 transition-colors">www.jaimanco.com</a>
+              <a href="https://www.jaimanco.in" target="_blank" rel="noopener noreferrer" className="hover:text-accent-400 transition-colors">www.jaimanco.in</a>
             </div>
           </div>
 
