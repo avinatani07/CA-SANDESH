@@ -86,12 +86,12 @@ const Contact = () => {
             <div className="pt-6 border-t border-neutral-200">
               <h4 className="font-semibold text-neutral-900 mb-4">Follow Us</h4>
               <div className="flex gap-4">
-                <a href="https://www.linkedin.com/company/jaimanco" target="_blank" rel="noopener noreferrer"
+                <a href="https://www.linkedin.com/company/jaiman-company/" target="_blank" rel="noopener noreferrer"
                   className="w-11 h-11 bg-primary-500 hover:bg-accent-500 text-white rounded-lg flex items-center justify-center transition-colors"
                   aria-label="LinkedIn">
                   <Linkedin size={20} />
                 </a>
-                <a href="https://www.instagram.com/jaimanco" target="_blank" rel="noopener noreferrer"
+                <a href="https://www.instagram.com/sandeshjaiman0928/" target="_blank" rel="noopener noreferrer"
                   className="w-11 h-11 bg-primary-500 hover:bg-accent-500 text-white rounded-lg flex items-center justify-center transition-colors"
                   aria-label="Instagram">
                   <Instagram size={20} />

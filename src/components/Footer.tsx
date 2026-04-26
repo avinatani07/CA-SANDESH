@@ -73,17 +73,17 @@ const Footer = () => {
             &copy; {currentYear} Jaiman & Company, Chartered Accountants. All rights reserved.
           </p>
           <div className="flex gap-3">
-            <a href="https://www.linkedin.com/company/jaimanco" target="_blank" rel="noopener noreferrer"
+            <a href="ttps://www.linkedin.com/company/jaiman-company/" target="_blank" rel="noopener noreferrer"
               className="w-9 h-9 bg-primary-600 hover:bg-accent-500 rounded-lg flex items-center justify-center transition-colors"
               aria-label="LinkedIn">
               <Linkedin size={18} />
             </a>
-            <a href="https://www.instagram.com/jaimanco" target="_blank" rel="noopener noreferrer"
+            <a href="https://www.instagram.com/sandeshjaiman0928/" target="_blank" rel="noopener noreferrer"
               className="w-9 h-9 bg-primary-600 hover:bg-accent-500 rounded-lg flex items-center justify-center transition-colors"
               aria-label="Instagram">
               <Instagram size={18} />
             </a>
-            <a href="https://www.jaimanco.com" target="_blank" rel="noopener noreferrer"
+            <a href="https://www.jaimanco.in" target="_blank" rel="noopener noreferrer"
               className="w-9 h-9 bg-primary-600 hover:bg-accent-500 rounded-lg flex items-center justify-center transition-colors"
               aria-label="Website">
               <Globe size={18} />
