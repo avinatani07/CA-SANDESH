@@ -35,8 +35,8 @@ const Contact = () => {
                 </div>
                 <div>
                   <h4 className="font-semibold text-neutral-900 mb-1">Email</h4>
-                  <a href="mailto:info@jaimanco.com" className="text-neutral-700 hover:text-primary-500 transition-colors">
-                    info@jaimanco.com
+                  <a href="mailto:jaimanandco@gmail.com" className="text-neutral-700 hover:text-primary-500 transition-colors">
+                    jaimanandco@gmail.com
                   </a>
                 </div>
               </div>
@@ -48,9 +48,9 @@ const Contact = () => {
                 </div>
                 <div>
                   <h4 className="font-semibold text-neutral-900 mb-1">Website</h4>
-                  <a href="https://www.jaimanco.com" target="_blank" rel="noopener noreferrer"
+                  <a href="https://www.jaimanco.in" target="_blank" rel="noopener noreferrer"
                     className="text-neutral-700 hover:text-primary-500 transition-colors">
-                    www.jaimanco.com
+                    www.jaimanco.in
                   </a>
                 </div>
               </div>

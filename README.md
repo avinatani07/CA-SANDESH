@@ -158,4 +158,4 @@ All rights reserved.
 
 ## Contact
 
-For questions or support, please contact info@cafirm.com
+For questions or support, please contact jaimanandco@gmail.com
