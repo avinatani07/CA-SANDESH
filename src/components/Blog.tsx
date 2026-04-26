@@ -1,36 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Calendar, ArrowRight, BookOpen } from 'lucide-react';
-import { loadBlogPosts, type BlogPost } from '../state/blog';
-import BlogPostModal from './BlogPostModal';
-import seedData from '../data/blogSeed.json';
-
-type SeedRow = { url: string; title: string; date: string; author: string; body: string };
-
-function estimateReadTime(text: string) {
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  const minutes = Math.max(1, Math.round(words / 200));
-  return `${minutes} min read`;
-}
-
-function makeExcerpt(body: string) {
-  const firstPara = body.split('\n').find((l) => l.trim().length > 0) ?? '';
-  // Avoid returning a header-only excerpt like "Introduction"
-  const secondPara = body.split('\n').find((l, idx) => idx > 0 && l.trim().length > 0) ?? '';
-  const candidate = firstPara.length < 40 ? secondPara : firstPara;
-  return candidate.slice(0, 180);
-}
-
-const seedPosts: BlogPost[] = (seedData as SeedRow[]).map((p, idx) => ({
-  id: `seed_${idx + 1}`,
-  title: p.title,
-  excerpt: makeExcerpt(p.body),
-  category: 'Blogs',
-  dateLabel: p.date,
-  readTime: estimateReadTime(p.body),
-  content: p.body,
-  createdAt: 0,
-}));
+import { loadBlogPosts, seedPosts  } from '../state/blog';
+import type {BlogPost} from '../state/blog';
 
 const categoryColors: Record<string, string> = {
   'Income Tax': 'bg-blue-100 text-blue-700',
@@ -45,7 +17,6 @@ const Blog = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const [userPosts, setUserPosts] = useState<BlogPost[]>([]);
-  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
 
   useEffect(() => {
     const load = () => setUserPosts(loadBlogPosts());
@@ -117,21 +88,20 @@ const Blog = () => {
                     <Calendar size={14} />
                     <span>{post.dateLabel}</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPost(post)}
+                  <a
+                    href={`/?post=${post.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="flex items-center gap-1 text-primary-500 hover:text-accent-500 text-sm font-medium transition-colors"
                   >
                     Read More <ArrowRight size={14} />
-                  </button>
+                  </a>
                 </div>
               </div>
             </motion.article>
           ))}
         </div>
       </div>
-
-      <BlogPostModal post={selectedPost} onClose={() => setSelectedPost(null)} />
     </section>
   );
 };
