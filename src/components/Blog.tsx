@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Calendar, ArrowRight, BookOpen } from 'lucide-react';
-import { loadBlogPosts, seedPosts, type BlogPost } from '../state/blog';
+import { loadBlogPosts, seedPosts  } from '../state/blog';
+import type {BlogPost} from '../state/blog';
 
 const categoryColors: Record<string, string> = {
   'Income Tax': 'bg-blue-100 text-blue-700',

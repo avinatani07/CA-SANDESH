@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Trash2, X } from 'lucide-react';
 import { useAuth } from '../state/auth';
-import { addBlogPost, deleteBlogPost, loadBlogPosts, type BlogPost } from '../state/blog';
+import { addBlogPost, deleteBlogPost, loadBlogPosts  } from '../state/blog';
+import type {BlogPost} from '../state/blog';
 
 const categories = [
   'Income Tax',
@@ -101,8 +102,8 @@ export default function AdminBlogPanel() {
     const el = document.getElementById('blog-content-editor') as HTMLTextAreaElement | null;
     if (!el) return;
 
-    const start = el.selectionStart ?? 0;
-    const end = el.selectionEnd ?? 0;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
     let prefix = '';
     let suffix = '';
 
@@ -118,7 +119,7 @@ export default function AdminBlogPanel() {
     } else if (kind === 'ul') {
       prefix = '- ';
       suffix = '';
-    } else if (kind === 'link') {
+    } else {
       prefix = '[';
       suffix = '](https://)';
     }

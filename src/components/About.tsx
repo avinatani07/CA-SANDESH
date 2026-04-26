@@ -37,7 +37,7 @@ const About = () => {
               alt="Jaiman & Company, Chartered Accountants"
               className="h-10 w-auto object-contain"
               onError={(e) => {
-                (e.currentTarget as HTMLImageElement).style.display = 'none';
+                (e.currentTarget).style.display = 'none';
               }}
             />
             <h2 className="text-4xl font-bold text-primary-500 font-heading">About Us</h2>

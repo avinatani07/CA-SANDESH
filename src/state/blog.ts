@@ -45,7 +45,7 @@ export function loadBlogPosts(): BlogPost[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw) as BlogPost[];
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((p) => typeof p?.id === 'string' && typeof p?.title === 'string');
+    return parsed.filter((p) => typeof p.id === 'string' && typeof p.title === 'string');
   } catch {
     return [];
   }

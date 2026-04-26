@@ -31,7 +31,7 @@ function readSession(): AuthUser | null {
     const raw = localStorage.getItem(AUTH_STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as AuthUser;
-    if (!parsed?.email) return null;
+    if (!parsed.email) return null;
     return parsed;
   } catch {
     return null;

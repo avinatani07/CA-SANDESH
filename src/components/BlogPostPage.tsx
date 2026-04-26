@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { type BlogPost, getAllBlogPosts } from '../state/blog';
+import {  getAllBlogPosts } from '../state/blog';
+import type {BlogPost} from '../state/blog';
 
 export default function BlogPostPage({ postId }: { postId: string }) {
   const [post, setPost] = useState<BlogPost | null>(null);
