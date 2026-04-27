@@ -25,8 +25,23 @@ const ContactForm = () => {
     setSubmitStatus('idle');
 
     try {
-      // Simulate form submission (replace with actual API call)
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch('https://formsubmit.co/ajax/jaimanandco@gmail.com', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          message: data.message,
+          _subject: 'New Website Contact Form Submission',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
       
       console.log('Form submitted:', data);
       setSubmitStatus('success');
