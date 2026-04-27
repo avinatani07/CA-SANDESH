@@ -108,12 +108,6 @@ export default function SignInModal() {
                   {submitting ? 'Signing in…' : 'Sign in'}
                 </button>
               </div>
-
-              <p className="text-xs text-neutral-500 leading-relaxed">
-                Tip: set <span className="font-mono">VITE_ADMIN_EMAIL</span> and{' '}
-                <span className="font-mono">VITE_ADMIN_PASSWORD</span> in a <span className="font-mono">.env</span>{' '}
-                file to change the admin credentials.
-              </p>
             </form>
           </motion.div>
         </motion.div>
