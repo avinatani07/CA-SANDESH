@@ -1,18 +1,23 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import {  getAllBlogPosts } from '../state/blog';
-import type {BlogPost} from '../state/blog';
+import { fetchBlogPostById } from '../state/blog';
+import type { BlogPost } from '../state/blog';
 
 export default function BlogPostPage({ postId }: { postId: string }) {
   const [post, setPost] = useState<BlogPost | null>(null);
 
   useEffect(() => {
-    const allPosts = getAllBlogPosts();
-    const found = allPosts.find(p => p.id === postId);
-    setPost(found || null);
-    
-    // Scroll to top on load
-    window.scrollTo(0, 0);
+    let isMounted = true;
+
+    fetchBlogPostById(postId).then((found) => {
+      if (!isMounted) return;
+      setPost(found);
+      window.scrollTo(0, 0);
+    });
+
+    return () => {
+      isMounted = false;
+    };
   }, [postId]);
 
   if (!post) {

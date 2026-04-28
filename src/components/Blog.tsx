@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Calendar, ArrowRight, BookOpen } from 'lucide-react';
-import { loadBlogPosts, seedPosts  } from '../state/blog';
-import type {BlogPost} from '../state/blog';
+import { fetchPublishedBlogPosts, seedPosts } from '../state/blog';
+import type { BlogPost } from '../state/blog';
 
 const categoryColors: Record<string, string> = {
   'Income Tax': 'bg-blue-100 text-blue-700',
@@ -19,10 +19,20 @@ const Blog = () => {
   const [userPosts, setUserPosts] = useState<BlogPost[]>([]);
 
   useEffect(() => {
-    const load = () => setUserPosts(loadBlogPosts());
+    let isMounted = true;
+
+    const load = async () => {
+      const posts = await fetchPublishedBlogPosts();
+      if (!isMounted) return;
+      setUserPosts(posts);
+    };
+
     load();
     window.addEventListener('jaiman:blog-updated', load);
-    return () => window.removeEventListener('jaiman:blog-updated', load);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('jaiman:blog-updated', load);
+    };
   }, []);
 
   const combinedPosts = useMemo(() => {

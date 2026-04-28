@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '../state/auth';
@@ -9,11 +9,6 @@ export default function SignInModal() {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const defaultCreds = useMemo(() => {
-    const e = (import.meta.env.VITE_ADMIN_EMAIL as string | undefined) ?? 'admin@jaimanco.com';
-    return { email: e };
-  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -67,7 +62,6 @@ export default function SignInModal() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   type="email"
-                  placeholder={defaultCreds.email}
                   autoComplete="username"
                   required
                   className="w-full rounded-lg border border-neutral-200 px-4 py-2.5 text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-accent-400/60"
@@ -115,4 +109,3 @@ export default function SignInModal() {
     </AnimatePresence>
   );
 }
-
