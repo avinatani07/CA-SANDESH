@@ -23,6 +23,8 @@
     "react-hook-form": "^7.71.2",
     "react-scroll": "^1.9.3",
     "@supabase/supabase-js": "^2.49.1",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {

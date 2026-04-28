@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { Send } from 'lucide-react';
@@ -19,12 +19,26 @@ const ContactForm = () => {
 
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const resetTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) {
+        window.clearTimeout(resetTimerRef.current);
+      }
+    };
+  }, []);
 
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
     try {
+      if (resetTimerRef.current) {
+        window.clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = null;
+      }
+
       const response = await fetch('https://formsubmit.co/ajax/jaimanandco@gmail.com', {
         method: 'POST',
         headers: {
@@ -47,8 +61,7 @@ const ContactForm = () => {
       setSubmitStatus('success');
       reset();
       
-      // Reset success message after 5 seconds
-      setTimeout(() => setSubmitStatus('idle'), 5000);
+      resetTimerRef.current = window.setTimeout(() => setSubmitStatus('idle'), 5000);
     } catch (error) {
       console.error('Form submission error:', error);
       setSubmitStatus('error');
