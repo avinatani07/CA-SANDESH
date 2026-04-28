@@ -9,7 +9,7 @@ A professional, modern website for a Chartered Accountants firm built with React
 - **Smooth Scrolling**: Navigation with smooth scroll behavior between sections
 - **Interactive Components**: Hover effects, animations, and interactive elements
 - **Contact Form**: Functional contact form with validation
-- **Admin Sign In + Blog Posting**: Sign in as admin and publish blog posts (stored locally in the browser)
+- **Admin Sign In + Blog Posting**: Sign in as admin and publish blog posts (stored online via Supabase)
 - **Professional Sections**:
   - Hero section with call-to-action
   - About section with firm information
@@ -27,6 +27,7 @@ A professional, modern website for a Chartered Accountants firm built with React
 - **React Hook Form**: Performant form validation
 - **React Scroll**: Smooth scrolling navigation
 - **Lucide React**: Beautiful SVG icons
+- **Supabase**: Authentication + hosted database for blog posts
 
 ## Getting Started
 
@@ -97,7 +98,6 @@ ca-firm-website/
 ├── index.html
 ├── package.json
 ├── vite.config.ts
-├── tailwind.config.js
 └── tsconfig.json
 ```
 
@@ -112,10 +112,7 @@ ca-firm-website/
 
 ### Colors
 
-The color scheme can be customized in `tailwind.config.js`:
-- Primary colors: Professional blue tones
-- Accent colors: Gold/amber for highlights
-- Neutral colors: Grays for text and backgrounds
+The color scheme is defined using Tailwind v4 theme tokens in `src/styles.css`.
 
 ### Content
 
@@ -126,24 +123,17 @@ Update the following files to customize content:
 - `src/components/Contact.tsx` - Contact details
 - `src/components/Footer.tsx` - Footer content
 
-### Admin credentials (Sign in)
+### Admin login + Blog storage
 
-Create a `.env` file in the project root to set admin credentials:
+Blog publishing uses Supabase Authentication and a Supabase database. Setup instructions (SQL + env vars) are in `SUPABASE_SETUP.md`.
 
-```bash
-VITE_ADMIN_EMAIL=admin@jaimanco.com
-VITE_ADMIN_PASSWORD=change-me
-```
+### Logo
 
-Then restart `npm run dev`.
-
-### CA India logo
-
-The logo shown in the navbar/about header is `public/ca-india-logo.svg`. Replace it with the exact “CA India” logo file you want to use.
+The logo used in the navbar/about header is `public/jaimanco-logo.png`.
 
 ### Fonts
 
-The website uses Google Fonts (Poppins and Inter). These are loaded in `index.html`.
+The website uses Google Fonts (Poppins and Inter). These are imported in `src/styles.css`.
 
 ## Browser Support
 

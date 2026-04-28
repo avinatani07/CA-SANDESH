@@ -1,19 +1,37 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import {  getAllBlogPosts } from '../state/blog';
-import type {BlogPost} from '../state/blog';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { fetchBlogPostById } from '../state/blog';
+import type { BlogPost } from '../state/blog';
 
 export default function BlogPostPage({ postId }: { postId: string }) {
   const [post, setPost] = useState<BlogPost | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const allPosts = getAllBlogPosts();
-    const found = allPosts.find(p => p.id === postId);
-    setPost(found || null);
-    
-    // Scroll to top on load
-    window.scrollTo(0, 0);
+    let isMounted = true;
+    setIsLoading(true);
+
+    fetchBlogPostById(postId).then((found) => {
+      if (!isMounted) return;
+      setPost(found);
+      setIsLoading(false);
+      window.scrollTo(0, 0);
+    });
+
+    return () => {
+      isMounted = false;
+    };
   }, [postId]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-neutral-600">Loading…</div>
+      </div>
+    );
+  }
 
   if (!post) {
     return (
@@ -57,9 +75,7 @@ export default function BlogPostPage({ postId }: { postId: string }) {
         </div>
 
         <div className="prose prose-lg prose-neutral max-w-none prose-headings:font-heading prose-a:text-primary-600 prose-a:no-underline hover:prose-a:underline">
-          {post.content
-            .split('\n')
-            .map((line, idx) => (line.trim() === '' ? <br key={idx} /> : <p key={idx}>{line}</p>))}
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
         </div>
       </main>
     </div>

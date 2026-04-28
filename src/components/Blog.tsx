@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Calendar, ArrowRight, BookOpen } from 'lucide-react';
-import { loadBlogPosts, seedPosts  } from '../state/blog';
-import type {BlogPost} from '../state/blog';
+import { fetchPublishedBlogPosts, seedPosts } from '../state/blog';
+import type { BlogPost } from '../state/blog';
 
 const categoryColors: Record<string, string> = {
   'Income Tax': 'bg-blue-100 text-blue-700',
@@ -11,6 +11,8 @@ const categoryColors: Record<string, string> = {
   'Business Advisory': 'bg-orange-100 text-orange-700',
   'Business Planning': 'bg-red-100 text-red-700',
   'Wealth Planning': 'bg-teal-100 text-teal-700',
+  Blogs: 'bg-indigo-100 text-indigo-700',
+  Other: 'bg-neutral-100 text-neutral-700',
 };
 
 const Blog = () => {
@@ -19,10 +21,20 @@ const Blog = () => {
   const [userPosts, setUserPosts] = useState<BlogPost[]>([]);
 
   useEffect(() => {
-    const load = () => setUserPosts(loadBlogPosts());
+    let isMounted = true;
+
+    const load = async () => {
+      const posts = await fetchPublishedBlogPosts();
+      if (!isMounted) return;
+      setUserPosts(posts);
+    };
+
     load();
     window.addEventListener('jaiman:blog-updated', load);
-    return () => window.removeEventListener('jaiman:blog-updated', load);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('jaiman:blog-updated', load);
+    };
   }, []);
 
   const combinedPosts = useMemo(() => {
@@ -66,7 +78,11 @@ const Blog = () => {
               <div className="p-6">
                 {/* Category & Read time */}
                 <div className="flex items-center justify-between mb-3">
-                  <span className={`text-xs font-semibold px-3 py-1 rounded-full ${categoryColors[post.category]}`}>
+                  <span
+                    className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                      categoryColors[post.category] ?? 'bg-neutral-100 text-neutral-700'
+                    }`}
+                  >
                     {post.category}
                   </span>
                   <span className="text-xs text-neutral-500">{post.readTime}</span>

@@ -95,14 +95,16 @@ const Navbar = () => {
             {/* Auth actions */}
             {user ? (
               <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={openAdmin}
-                  className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-primary-600 hover:border-accent-400 hover:text-accent-600 transition-colors"
-                >
-                  <PenSquare size={16} />
-                  Post blog
-                </button>
+                {user.isAdmin && (
+                  <button
+                    type="button"
+                    onClick={openAdmin}
+                    className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-primary-600 hover:border-accent-400 hover:text-accent-600 transition-colors"
+                  >
+                    <PenSquare size={16} />
+                    Post blog
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={signOut}
@@ -168,17 +170,19 @@ const Navbar = () => {
               <div className="pt-2 border-t border-neutral-100" />
               {user ? (
                 <div className="space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      closeMenu();
-                      openAdmin();
-                    }}
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-base font-semibold text-primary-600 hover:border-accent-400 hover:text-accent-600 transition-colors"
-                  >
-                    <PenSquare size={18} />
-                    Post blog
-                  </button>
+                  {user.isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        closeMenu();
+                        openAdmin();
+                      }}
+                      className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-base font-semibold text-primary-600 hover:border-accent-400 hover:text-accent-600 transition-colors"
+                    >
+                      <PenSquare size={18} />
+                      Post blog
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => {

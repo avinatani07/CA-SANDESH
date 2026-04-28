@@ -1,4 +1,5 @@
 import seedData from '../data/blogSeed.json';
+import { isSupabaseConfigured, supabase } from './supabase';
 
 export type BlogPost = {
   id: string;
@@ -37,45 +38,77 @@ export const seedPosts: BlogPost[] = (seedData as SeedRow[]).map((p, idx) => ({
   createdAt: 0,
 }));
 
-const BLOG_STORAGE_KEY = 'jaiman_blog_posts_v1';
+type BlogPostRow = {
+  id: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  date_label: string;
+  read_time: string;
+  content: string;
+  created_at: string;
+  published: boolean;
+};
 
-export function loadBlogPosts(): BlogPost[] {
-  try {
-    const raw = localStorage.getItem(BLOG_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as BlogPost[];
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((p) => typeof p.id === 'string' && typeof p.title === 'string');
-  } catch {
-    return [];
-  }
-}
-
-export function getAllBlogPosts(): BlogPost[] {
-  return [...loadBlogPosts(), ...seedPosts];
-}
-
-export function saveBlogPosts(posts: BlogPost[]) {
-  try {
-    localStorage.setItem(BLOG_STORAGE_KEY, JSON.stringify(posts));
-  } catch {
-    // ignore
-  }
-}
-
-export function addBlogPost(post: Omit<BlogPost, 'id' | 'createdAt'>): BlogPost {
-  const next: BlogPost = {
-    ...post,
-    id: crypto.randomUUID(),
-    createdAt: Date.now(),
+function mapRowToPost(row: BlogPostRow): BlogPost {
+  return {
+    id: row.id,
+    title: row.title,
+    excerpt: row.excerpt,
+    category: row.category,
+    dateLabel: row.date_label,
+    readTime: row.read_time,
+    content: row.content,
+    createdAt: Date.parse(row.created_at),
   };
-  const existing = loadBlogPosts();
-  saveBlogPosts([next, ...existing]);
-  return next;
 }
 
-export function deleteBlogPost(id: string) {
-  const existing = loadBlogPosts();
-  saveBlogPosts(existing.filter((p) => p.id !== id));
+export async function fetchPublishedBlogPosts(): Promise<BlogPost[]> {
+  if (!isSupabaseConfigured()) return [];
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .eq('published', true)
+    .order('created_at', { ascending: false });
+  if (error) return [];
+  return (data as BlogPostRow[]).map(mapRowToPost);
 }
 
+export async function fetchBlogPostById(id: string): Promise<BlogPost | null> {
+  if (id.startsWith('seed_')) return seedPosts.find((p) => p.id === id) ?? null;
+  if (!isSupabaseConfigured()) return null;
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .eq('id', id)
+    .eq('published', true)
+    .maybeSingle();
+  if (error || !data) return null;
+  return mapRowToPost(data as BlogPostRow);
+}
+
+export async function createBlogPost(post: Omit<BlogPost, 'id' | 'createdAt'>): Promise<{ ok: true; post: BlogPost } | { ok: false; error: string }> {
+  if (!isSupabaseConfigured()) return { ok: false, error: 'Supabase is not configured.' };
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .insert({
+      title: post.title,
+      excerpt: post.excerpt,
+      category: post.category,
+      date_label: post.dateLabel,
+      read_time: post.readTime,
+      content: post.content,
+      published: true,
+    })
+    .select('*')
+    .single();
+  if (error || !data) return { ok: false, error: error?.message || 'Failed to publish post.' };
+  return { ok: true, post: mapRowToPost(data as BlogPostRow) };
+}
+
+export async function removeBlogPost(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (!isSupabaseConfigured()) return { ok: false, error: 'Supabase is not configured.' };
+  const { error } = await supabase.from('blog_posts').delete().eq('id', id);
+  if (error) return { ok: false, error: error.message || 'Failed to delete post.' };
+  return { ok: true };
+}

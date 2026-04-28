@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Trash2, X } from 'lucide-react';
 import { useAuth } from '../state/auth';
-import { addBlogPost, deleteBlogPost, loadBlogPosts  } from '../state/blog';
-import type {BlogPost} from '../state/blog';
+import { createBlogPost, fetchPublishedBlogPosts, removeBlogPost } from '../state/blog';
+import type { BlogPost } from '../state/blog';
 
 const categories = [
   'Income Tax',
@@ -46,7 +46,14 @@ export default function AdminBlogPanel() {
   const [content, setContent] = useState('');
 
   useEffect(() => {
-    setPosts(loadBlogPosts());
+    let isMounted = true;
+    fetchPublishedBlogPosts().then((next) => {
+      if (!isMounted) return;
+      setPosts(next);
+    });
+    return () => {
+      isMounted = false;
+    };
   }, [isAdminOpen]);
 
   const derived = useMemo(() => {
@@ -58,10 +65,10 @@ export default function AdminBlogPanel() {
   }, [excerpt, content]);
 
   function refresh() {
-    setPosts(loadBlogPosts());
+    fetchPublishedBlogPosts().then((next) => setPosts(next));
   }
 
-  function onCreate() {
+  async function onCreate() {
     if (!user) {
       closeAdmin();
       openSignIn();
@@ -74,7 +81,7 @@ export default function AdminBlogPanel() {
 
     if (!cleanTitle || !cleanExcerpt || !cleanContent) return;
 
-    addBlogPost({
+    const created = await createBlogPost({
       title: cleanTitle,
       excerpt: cleanExcerpt,
       category,
@@ -82,6 +89,8 @@ export default function AdminBlogPanel() {
       readTime: derived.readTime,
       content: cleanContent,
     });
+
+    if (!created.ok) return;
 
     setTitle('');
     setExcerpt('');
@@ -92,8 +101,9 @@ export default function AdminBlogPanel() {
     window.dispatchEvent(new Event('jaiman:blog-updated'));
   }
 
-  function onDelete(id: string) {
-    deleteBlogPost(id);
+  async function onDelete(id: string) {
+    const res = await removeBlogPost(id);
+    if (!res.ok) return;
     refresh();
     window.dispatchEvent(new Event('jaiman:blog-updated'));
   }
@@ -299,7 +309,7 @@ export default function AdminBlogPanel() {
                 <div>
                   <div className="flex items-center justify-between">
                     <h4 className="text-base font-bold text-neutral-900 font-heading">Your published posts</h4>
-                    <span className="text-xs text-neutral-500">Stored locally in this browser</span>
+                    <span className="text-xs text-neutral-500">Stored online</span>
                   </div>
 
                   <div className="mt-4 space-y-3">
@@ -344,4 +354,3 @@ export default function AdminBlogPanel() {
     </AnimatePresence>
   );
 }
-
