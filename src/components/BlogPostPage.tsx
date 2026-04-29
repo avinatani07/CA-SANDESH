@@ -60,6 +60,12 @@ export default function BlogPostPage({ postId }: { postId: string }) {
       </div>
 
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20 max-w-4xl">
+        {post.imageUrl && (
+          <div className="mb-10 overflow-hidden rounded-2xl border border-neutral-200">
+            <img src={post.imageUrl} alt={post.title} className="w-full h-64 md:h-80 object-cover" loading="lazy" />
+          </div>
+        )}
+
         <div className="mb-10 text-center">
           <div className="inline-block text-sm font-semibold text-primary-600 bg-primary-50 px-3 py-1 rounded-full mb-4">
             {post.category}
