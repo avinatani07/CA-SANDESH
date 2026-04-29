@@ -78,6 +78,145 @@ export default function BlogPostPage({ postId }: { postId: string }) {
     };
   }, [post?.title, shareUrl]);
 
+  const seoTags = useMemo(() => {
+    const base = [
+      'Chartered Accountants',
+      'CA Firm',
+      'India',
+      'Income Tax',
+      'GST',
+      'Tax Filing',
+      'Accounting',
+      'Auditing',
+      'Compliance',
+      'Business Advisory',
+      'Virtual CFO',
+      'Wealth Planning',
+    ];
+    const extras = [post?.category].filter((t): t is string => Boolean(t));
+    const unique = Array.from(new Set([...extras, ...base]));
+    return unique.slice(0, 8);
+  }, [post?.category]);
+
+  useEffect(() => {
+    if (!post) return;
+
+    const prevTitle = document.title;
+    const prevMeta = new Map<string, string | null>();
+    const prevLink = new Map<string, string | null>();
+
+    function getOrCreateMeta(selector: string, attrs: Record<string, string>) {
+      let el = document.head.querySelector<HTMLMetaElement>(selector);
+      if (!el) {
+        el = document.createElement('meta');
+        for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+        document.head.appendChild(el);
+      }
+      return el;
+    }
+
+    function upsertMetaByName(name: string, content: string) {
+      const selector = `meta[name="${name}"]`;
+      const existing = document.head.querySelector<HTMLMetaElement>(selector);
+      prevMeta.set(selector, existing?.getAttribute('content') ?? null);
+      const el = getOrCreateMeta(selector, { name });
+      el.setAttribute('content', content);
+    }
+
+    function upsertMetaByProperty(property: string, content: string) {
+      const selector = `meta[property="${property}"]`;
+      const existing = document.head.querySelector<HTMLMetaElement>(selector);
+      prevMeta.set(selector, existing?.getAttribute('content') ?? null);
+      const el = getOrCreateMeta(selector, { property });
+      el.setAttribute('content', content);
+    }
+
+    function upsertLink(rel: string, href: string) {
+      const selector = `link[rel="${rel}"]`;
+      const existing = document.head.querySelector<HTMLLinkElement>(selector);
+      prevLink.set(selector, existing?.getAttribute('href') ?? null);
+      let el = existing;
+      if (!el) {
+        el = document.createElement('link');
+        el.setAttribute('rel', rel);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('href', href);
+    }
+
+    const url = shareLinks.url || window.location.href;
+    const title = `${post.title} | Jaiman & Company Blog`;
+    const description = post.excerpt || 'Tax, GST, accounting, and compliance insights by Jaiman & Company, Chartered Accountants.';
+    const image = post.imageUrl || 'https://www.jaimanco.in/jaimanco-logo.png';
+
+    document.title = title;
+
+    upsertMetaByName('description', description);
+    upsertMetaByName('keywords', seoTags.join(', '));
+
+    upsertMetaByProperty('og:type', 'article');
+    upsertMetaByProperty('og:title', title);
+    upsertMetaByProperty('og:description', description);
+    upsertMetaByProperty('og:url', url);
+    upsertMetaByProperty('og:image', image);
+
+    upsertMetaByName('twitter:card', 'summary_large_image');
+    upsertMetaByName('twitter:title', title);
+    upsertMetaByName('twitter:description', description);
+    upsertMetaByName('twitter:image', image);
+
+    upsertMetaByProperty('article:section', post.category);
+
+    document.head.querySelectorAll('meta[property="article:tag"][data-jaiman="tag"]').forEach((el) => el.remove());
+    for (const tag of seoTags) {
+      const el = document.createElement('meta');
+      el.setAttribute('property', 'article:tag');
+      el.setAttribute('content', tag);
+      el.setAttribute('data-jaiman', 'tag');
+      document.head.appendChild(el);
+    }
+
+    upsertLink('canonical', url);
+
+    const jsonLdId = 'jaiman-jsonld-blog';
+    document.getElementById(jsonLdId)?.remove();
+    const jsonLd = document.createElement('script');
+    jsonLd.id = jsonLdId;
+    jsonLd.type = 'application/ld+json';
+    jsonLd.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: post.title,
+      description,
+      image: image ? [image] : undefined,
+      keywords: seoTags.join(', '),
+      articleSection: post.category,
+      author: { '@type': 'Organization', name: 'Jaiman & Company' },
+      publisher: { '@type': 'Organization', name: 'Jaiman & Company', logo: { '@type': 'ImageObject', url: 'https://www.jaimanco.in/jaimanco-logo.png' } },
+      mainEntityOfPage: url,
+      url,
+    });
+    document.head.appendChild(jsonLd);
+
+    return () => {
+      document.title = prevTitle;
+      for (const [selector, content] of prevMeta.entries()) {
+        const el = document.head.querySelector<HTMLMetaElement>(selector);
+        if (!el) continue;
+        if (content === null) el.remove();
+        else el.setAttribute('content', content);
+      }
+      for (const [selector, href] of prevLink.entries()) {
+        const el = document.head.querySelector<HTMLLinkElement>(selector);
+        if (!el) continue;
+        if (href === null) el.remove();
+        else el.setAttribute('href', href);
+      }
+      document.head.querySelectorAll('meta[property="article:tag"][data-jaiman="tag"]').forEach((el) => el.remove());
+      document.getElementById(jsonLdId)?.remove();
+    };
+  }, [post, seoTags, shareLinks.url]);
+
   async function copyLink() {
     try {
       await navigator.clipboard.writeText(shareLinks.url);
@@ -181,6 +320,19 @@ export default function BlogPostPage({ postId }: { postId: string }) {
                 <Linkedin size={16} />
                 LinkedIn
               </a>
+            </div>
+          </div>
+          <div className="border-t border-neutral-100 px-5 py-4">
+            <div className="text-xs font-semibold text-neutral-500">Topics</div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {seoTags.map((t) => (
+                <span
+                  key={t}
+                  className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700"
+                >
+                  {t}
+                </span>
+              ))}
             </div>
           </div>
         </div>
