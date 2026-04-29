@@ -1,8 +1,12 @@
-import { motion } from 'framer-motion';
+import { useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
 import { Link } from 'react-scroll';
 import { ChevronDown } from 'lucide-react';
 
 const Hero = () => {
+  const titleRef = useRef(null);
+  const isTitleInView = useInView(titleRef, { amount: 0.6 });
+
   return (
     <section
       id="home"
@@ -22,15 +26,16 @@ const Hero = () => {
         >
           {/* Firm Name */}
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 font-heading">
-            <motion.span
-              initial={{ clipPath: 'inset(0 100% 0 0)', opacity: 0, x: -24 }}
-              whileInView={{ clipPath: 'inset(0 0% 0 0)', opacity: 1, x: 0 }}
-              viewport={{ once: false, amount: 0.6 }}
-              transition={{ duration: 0.9, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
-              className="inline-block"
-            >
-              Jaiman & Company
-            </motion.span>
+            <span ref={titleRef} className="inline-block overflow-hidden align-bottom">
+              <motion.span
+                initial={{ opacity: 0, x: -120 }}
+                animate={isTitleInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -120 }}
+                transition={{ duration: 0.9, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
+                className="inline-block"
+              >
+                Jaiman & Company
+              </motion.span>
+            </span>
           </h1>
 
           {/* Tagline */}
