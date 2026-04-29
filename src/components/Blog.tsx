@@ -38,7 +38,16 @@ const Blog = () => {
   }, []);
 
   const combinedPosts = useMemo(() => {
-    return [...userPosts, ...seedPosts];
+    const overrides = new Map<string, BlogPost>();
+    const standalone: BlogPost[] = [];
+
+    for (const p of userPosts) {
+      if (p.legacyId) overrides.set(p.legacyId, p);
+      else standalone.push(p);
+    }
+
+    const mergedSeeds = seedPosts.map((seed) => overrides.get(seed.id) ?? seed);
+    return [...standalone, ...mergedSeeds].sort((a, b) => b.createdAt - a.createdAt);
   }, [userPosts]);
 
   return (
@@ -66,7 +75,7 @@ const Blog = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {combinedPosts.map((post, index) => (
             <motion.article
-              key={post.id}
+              key={post.legacyId ?? post.id}
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -74,6 +83,10 @@ const Blog = () => {
             >
               {/* Card top accent */}
               <div className="h-2 bg-gradient-to-r from-primary-500 to-accent-500" />
+
+              {post.imageUrl && (
+                <img src={post.imageUrl} alt={post.title} className="w-full h-44 object-cover" loading="lazy" />
+              )}
 
               <div className="p-6">
                 {/* Category & Read time */}
@@ -105,7 +118,7 @@ const Blog = () => {
                     <span>{post.dateLabel}</span>
                   </div>
                   <a
-                    href={`/?post=${post.id}`}
+                    href={`/?post=${post.legacyId ?? post.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1 text-primary-500 hover:text-accent-500 text-sm font-medium transition-colors"

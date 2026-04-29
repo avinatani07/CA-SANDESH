@@ -1,0 +1,4 @@
+import 'vite/client';
+
+export {};
+

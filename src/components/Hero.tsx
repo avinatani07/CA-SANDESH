@@ -1,8 +1,12 @@
-import { motion } from 'framer-motion';
+import { useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
 import { Link } from 'react-scroll';
 import { ChevronDown } from 'lucide-react';
 
 const Hero = () => {
+  const titleRef = useRef(null);
+  const isTitleInView = useInView(titleRef, { amount: 0.6 });
+
   return (
     <section
       id="home"
@@ -21,14 +25,18 @@ const Hero = () => {
           className="text-center text-white"
         >
           {/* Firm Name */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 font-heading"
-          >
-            Jaiman & Company
-          </motion.h1>
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 font-heading">
+            <span ref={titleRef} className="inline-block overflow-hidden align-bottom">
+              <motion.span
+                initial={{ opacity: 0, x: -120 }}
+                animate={isTitleInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -120 }}
+                transition={{ duration: 0.9, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
+                className="inline-block"
+              >
+                Jaiman & Company
+              </motion.span>
+            </span>
+          </h1>
 
           {/* Tagline */}
           <motion.p

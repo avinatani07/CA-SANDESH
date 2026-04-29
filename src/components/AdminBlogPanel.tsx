@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Trash2, X } from 'lucide-react';
+import { Pencil, Trash2, X } from 'lucide-react';
 import { useAuth } from '../state/auth';
-import { createBlogPost, fetchPublishedBlogPosts, removeBlogPost } from '../state/blog';
+import { createBlogPost, fetchPublishedBlogPosts, removeBlogPost, seedPosts, updateBlogPost, uploadBlogImage, upsertBlogPostByLegacyId } from '../state/blog';
 import type { BlogPost } from '../state/blog';
 
 const categories = [
+  'Blogs',
   'Income Tax',
   'GST',
   'Tax Filing',
@@ -42,8 +43,13 @@ export default function AdminBlogPanel() {
 
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState(categories[0]);
+  const [dateLabel, setDateLabel] = useState(monthYearLabel(Date.now()));
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
+  const [tags, setTags] = useState('');
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -57,18 +63,41 @@ export default function AdminBlogPanel() {
   }, [isAdminOpen]);
 
   const derived = useMemo(() => {
-    const now = Date.now();
     return {
-      dateLabel: monthYearLabel(now),
+      dateLabel,
       readTime: estimateReadTime(`${excerpt}\n${content}`),
     };
-  }, [excerpt, content]);
+  }, [dateLabel, excerpt, content]);
+
+  const displayPosts = useMemo(() => {
+    const overrides = new Map<string, BlogPost>();
+    const standalone: BlogPost[] = [];
+
+    for (const p of posts) {
+      if (p.legacyId) overrides.set(p.legacyId, p);
+      else standalone.push(p);
+    }
+
+    const mergedSeeds = seedPosts.map((seed) => overrides.get(seed.id) ?? seed);
+    return [...standalone, ...mergedSeeds].sort((a, b) => b.createdAt - a.createdAt);
+  }, [posts]);
+
+  const imagePreviewUrl = useMemo(() => {
+    if (imageFile) return URL.createObjectURL(imageFile);
+    return imageUrl;
+  }, [imageFile, imageUrl]);
+
+  useEffect(() => {
+    return () => {
+      if (imageFile && imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+    };
+  }, [imageFile, imagePreviewUrl]);
 
   function refresh() {
     fetchPublishedBlogPosts().then((next) => setPosts(next));
   }
 
-  async function onCreate() {
+  async function onSave() {
     if (!user) {
       closeAdmin();
       openSignIn();
@@ -78,23 +107,51 @@ export default function AdminBlogPanel() {
     const cleanTitle = title.trim();
     const cleanExcerpt = excerpt.trim();
     const cleanContent = content.trim();
+    const cleanTags = tags
+      .split(/[,\n]/g)
+      .map((t) => t.trim())
+      .filter(Boolean);
+    const uniqueTags = Array.from(new Set(cleanTags)).slice(0, 12);
 
     if (!cleanTitle || !cleanExcerpt || !cleanContent) return;
 
-    const created = await createBlogPost({
+    let nextImageUrl = imageUrl;
+    if (imageFile) {
+      const uploaded = await uploadBlogImage(imageFile);
+      if (!uploaded.ok) return;
+      nextImageUrl = uploaded.url;
+    }
+
+    const payload = {
       title: cleanTitle,
       excerpt: cleanExcerpt,
       category,
       dateLabel: derived.dateLabel,
       readTime: derived.readTime,
       content: cleanContent,
-    });
+      imageUrl: nextImageUrl,
+      tags: uniqueTags,
+      legacyId: editingKey?.startsWith('seed_') ? editingKey : null,
+    };
 
-    if (!created.ok) return;
+    if (editingKey) {
+      const res = editingKey.startsWith('seed_')
+        ? await upsertBlogPostByLegacyId(editingKey, payload)
+        : await updateBlogPost(editingKey, payload);
+      if (!res.ok) return;
+    } else {
+      const created = await createBlogPost(payload);
+      if (!created.ok) return;
+    }
 
     setTitle('');
     setExcerpt('');
     setContent('');
+    setTags('');
+    setImageUrl(null);
+    setImageFile(null);
+    setEditingKey(null);
+    setDateLabel(monthYearLabel(Date.now()));
     refresh();
 
     // notify Blog section to re-render
@@ -243,6 +300,46 @@ export default function AdminBlogPanel() {
                   </div>
 
                   <div className="space-y-2">
+                    <label className="text-sm font-semibold text-neutral-800">Tags (comma separated)</label>
+                    <input
+                      value={tags}
+                      onChange={(e) => setTags(e.target.value)}
+                      className="w-full rounded-lg border border-neutral-200 px-4 py-2.5 text-neutral-900 focus:outline-none focus:ring-2 focus:ring-accent-400/60"
+                      placeholder="income tax, gst, audit, compliance"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-neutral-800">Image (optional)</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0] ?? null;
+                        setImageFile(f);
+                      }}
+                      className="w-full rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm text-neutral-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary-50 file:px-3 file:py-2 file:text-primary-700 hover:file:bg-primary-100"
+                    />
+                    {imagePreviewUrl && (
+                      <div className="overflow-hidden rounded-xl border border-neutral-200">
+                        <img src={imagePreviewUrl} alt="Blog" className="w-full h-44 object-cover" loading="lazy" />
+                      </div>
+                    )}
+                    {(imagePreviewUrl || imageFile) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImageFile(null);
+                          setImageUrl(null);
+                        }}
+                        className="text-sm font-semibold text-red-600 hover:text-red-700"
+                      >
+                        Remove image
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
                     <div className="flex items-center justify-between gap-3">
                       <label className="text-sm font-semibold text-neutral-800">Content (Markdown)</label>
                       <div className="flex flex-wrap items-center gap-2">
@@ -294,13 +391,32 @@ export default function AdminBlogPanel() {
                   </div>
 
                   <div className="flex items-center justify-end gap-3 pt-2">
+                    {editingKey && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingKey(null);
+                          setTitle('');
+                          setCategory(categories[0]);
+                          setDateLabel(monthYearLabel(Date.now()));
+                          setExcerpt('');
+                          setContent('');
+                          setTags('');
+                          setImageUrl(null);
+                          setImageFile(null);
+                        }}
+                        className="rounded-lg px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-100 transition-colors"
+                      >
+                        Cancel edit
+                      </button>
+                    )}
                     <button
                       type="button"
-                      onClick={onCreate}
+                      onClick={onSave}
                       disabled={!title.trim() || !excerpt.trim() || !content.trim()}
                       className="rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-60 transition-colors"
                     >
-                      Publish post
+                      {editingKey ? 'Save changes' : 'Publish post'}
                     </button>
                   </div>
                 </div>
@@ -313,14 +429,14 @@ export default function AdminBlogPanel() {
                   </div>
 
                   <div className="mt-4 space-y-3">
-                    {posts.length === 0 ? (
+                    {displayPosts.length === 0 ? (
                       <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-5 text-sm text-neutral-700">
                         No posts yet. Publish your first post on the left.
                       </div>
                     ) : (
-                      posts.map((p) => (
+                      displayPosts.map((p) => (
                         <div
-                          key={p.id}
+                          key={p.legacyId ?? p.id}
                           className="rounded-xl border border-neutral-200 bg-white p-4 hover:border-accent-300 transition-colors"
                         >
                           <div className="flex items-start justify-between gap-3">
@@ -330,15 +446,38 @@ export default function AdminBlogPanel() {
                                 {p.category} · {p.dateLabel} · {p.readTime}
                               </div>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => onDelete(p.id)}
-                              className="rounded-lg p-2 text-neutral-500 hover:bg-red-50 hover:text-red-600 transition-colors"
-                              aria-label="Delete post"
-                              title="Delete"
-                            >
-                              <Trash2 size={16} />
-                            </button>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingKey(p.legacyId ?? p.id);
+                                  setTitle(p.title);
+                                  setCategory(p.category);
+                                  setDateLabel(p.dateLabel);
+                                  setExcerpt(p.excerpt);
+                                  setContent(p.content);
+                                  setTags((p.tags ?? []).join(', '));
+                                  setImageUrl(p.imageUrl ?? null);
+                                  setImageFile(null);
+                                }}
+                                className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 transition-colors"
+                                aria-label="Edit post"
+                                title="Edit"
+                              >
+                                <Pencil size={16} />
+                              </button>
+                              {!p.id.startsWith('seed_') && (
+                                <button
+                                  type="button"
+                                  onClick={() => onDelete(p.id)}
+                                  className="rounded-lg p-2 text-neutral-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                  aria-label="Delete post"
+                                  title="Delete"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              )}
+                            </div>
                           </div>
                           <p className="mt-2 text-sm text-neutral-700 line-clamp-2">{p.excerpt}</p>
                         </div>
