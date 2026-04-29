@@ -21,15 +21,17 @@ const Hero = () => {
           className="text-center text-white"
         >
           {/* Firm Name */}
-          <motion.h1
-            initial={{ opacity: 0, x: -60 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: false, amount: 0.6 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 font-heading"
-          >
-            Jaiman & Company
-          </motion.h1>
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 font-heading">
+            <motion.span
+              initial={{ clipPath: 'inset(0 100% 0 0)', opacity: 0, x: -24 }}
+              whileInView={{ clipPath: 'inset(0 0% 0 0)', opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.6 }}
+              transition={{ duration: 0.9, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
+              className="inline-block"
+            >
+              Jaiman & Company
+            </motion.span>
+          </h1>
 
           {/* Tagline */}
           <motion.p
