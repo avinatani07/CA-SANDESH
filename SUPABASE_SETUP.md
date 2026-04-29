@@ -24,12 +24,14 @@ create table if not exists public.blog_posts (
   read_time text not null,
   content text not null,
   image_url text,
+  tags text[] not null default '{}',
   published boolean not null default true,
   created_at timestamptz not null default now()
 );
 
 alter table public.blog_posts add column if not exists legacy_id text;
 alter table public.blog_posts add column if not exists image_url text;
+alter table public.blog_posts add column if not exists tags text[] not null default '{}';
 create unique index if not exists blog_posts_legacy_id_key on public.blog_posts (legacy_id) where legacy_id is not null;
 
 create table if not exists public.admin_users (

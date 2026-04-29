@@ -93,10 +93,10 @@ export default function BlogPostPage({ postId }: { postId: string }) {
       'Virtual CFO',
       'Wealth Planning',
     ];
-    const extras = [post?.category].filter((t): t is string => Boolean(t));
+    const extras = [...(post?.tags ?? []), post?.category].filter((t): t is string => Boolean(t));
     const unique = Array.from(new Set([...extras, ...base]));
     return unique.slice(0, 8);
-  }, [post?.category]);
+  }, [post?.category, post?.tags]);
 
   useEffect(() => {
     if (!post) return;
@@ -322,24 +322,24 @@ export default function BlogPostPage({ postId }: { postId: string }) {
               </a>
             </div>
           </div>
-          <div className="border-t border-neutral-100 px-5 py-4">
-            <div className="text-xs font-semibold text-neutral-500">Topics</div>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {seoTags.map((t) => (
-                <span
-                  key={t}
-                  className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700"
-                >
-                  {t}
-                </span>
-              ))}
-            </div>
-          </div>
         </div>
 
         <div className="prose prose-lg prose-neutral max-w-none prose-headings:font-heading prose-p:leading-relaxed prose-blockquote:border-primary-500 prose-a:text-primary-600 prose-a:no-underline hover:prose-a:underline">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
         </div>
+
+        {(post.tags ?? []).length > 0 && (
+          <section className="mt-10">
+            <div className="text-sm font-bold text-neutral-900 font-heading">Tags</div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {(post.tags ?? []).map((t) => (
+                <span key={t} className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700">
+                  {t}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
 
         {relatedPosts.length > 0 && (
           <section className="mt-16 border-t border-neutral-100 pt-10">

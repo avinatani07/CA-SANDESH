@@ -46,6 +46,7 @@ export default function AdminBlogPanel() {
   const [dateLabel, setDateLabel] = useState(monthYearLabel(Date.now()));
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
+  const [tags, setTags] = useState('');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -106,6 +107,11 @@ export default function AdminBlogPanel() {
     const cleanTitle = title.trim();
     const cleanExcerpt = excerpt.trim();
     const cleanContent = content.trim();
+    const cleanTags = tags
+      .split(/[,\n]/g)
+      .map((t) => t.trim())
+      .filter(Boolean);
+    const uniqueTags = Array.from(new Set(cleanTags)).slice(0, 12);
 
     if (!cleanTitle || !cleanExcerpt || !cleanContent) return;
 
@@ -124,6 +130,7 @@ export default function AdminBlogPanel() {
       readTime: derived.readTime,
       content: cleanContent,
       imageUrl: nextImageUrl,
+      tags: uniqueTags,
       legacyId: editingKey?.startsWith('seed_') ? editingKey : null,
     };
 
@@ -140,6 +147,7 @@ export default function AdminBlogPanel() {
     setTitle('');
     setExcerpt('');
     setContent('');
+    setTags('');
     setImageUrl(null);
     setImageFile(null);
     setEditingKey(null);
@@ -292,6 +300,16 @@ export default function AdminBlogPanel() {
                   </div>
 
                   <div className="space-y-2">
+                    <label className="text-sm font-semibold text-neutral-800">Tags (comma separated)</label>
+                    <input
+                      value={tags}
+                      onChange={(e) => setTags(e.target.value)}
+                      className="w-full rounded-lg border border-neutral-200 px-4 py-2.5 text-neutral-900 focus:outline-none focus:ring-2 focus:ring-accent-400/60"
+                      placeholder="income tax, gst, audit, compliance"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
                     <label className="text-sm font-semibold text-neutral-800">Image (optional)</label>
                     <input
                       type="file"
@@ -383,6 +401,7 @@ export default function AdminBlogPanel() {
                           setDateLabel(monthYearLabel(Date.now()));
                           setExcerpt('');
                           setContent('');
+                          setTags('');
                           setImageUrl(null);
                           setImageFile(null);
                         }}
@@ -437,6 +456,7 @@ export default function AdminBlogPanel() {
                                   setDateLabel(p.dateLabel);
                                   setExcerpt(p.excerpt);
                                   setContent(p.content);
+                                  setTags((p.tags ?? []).join(', '));
                                   setImageUrl(p.imageUrl ?? null);
                                   setImageFile(null);
                                 }}

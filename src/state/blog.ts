@@ -10,6 +10,7 @@ export type BlogPost = {
   readTime: string;
   content: string;
   imageUrl?: string | null;
+  tags?: string[];
   legacyId?: string | null;
   createdAt: number;
 };
@@ -38,6 +39,7 @@ export const seedPosts: BlogPost[] = (seedData as SeedRow[]).map((p, idx) => ({
   readTime: estimateReadTime(p.body),
   content: p.body,
   imageUrl: null,
+  tags: [],
   legacyId: `seed_${idx + 1}`,
   createdAt: 0,
 }));
@@ -51,6 +53,7 @@ type BlogPostRow = {
   read_time: string;
   content: string;
   image_url: string | null;
+  tags: string[] | null;
   legacy_id: string | null;
   created_at: string;
   published: boolean;
@@ -66,6 +69,7 @@ function mapRowToPost(row: BlogPostRow): BlogPost {
     readTime: row.read_time,
     content: row.content,
     imageUrl: row.image_url,
+    tags: row.tags ?? [],
     legacyId: row.legacy_id,
     createdAt: Date.parse(row.created_at),
   };
@@ -123,6 +127,7 @@ export async function createBlogPost(post: Omit<BlogPost, 'id' | 'createdAt'>): 
       read_time: post.readTime,
       content: post.content,
       image_url: post.imageUrl ?? null,
+      tags: post.tags ?? [],
       legacy_id: post.legacyId ?? null,
       published: true,
     })
@@ -149,6 +154,7 @@ export async function upsertBlogPostByLegacyId(
         read_time: post.readTime,
         content: post.content,
         image_url: post.imageUrl ?? null,
+        tags: post.tags ?? [],
         legacy_id: legacyId,
         published: true,
       },
@@ -176,6 +182,7 @@ export async function updateBlogPost(
       read_time: post.readTime,
       content: post.content,
       image_url: post.imageUrl ?? null,
+      tags: post.tags ?? [],
       published: true,
     })
     .eq('id', id)
