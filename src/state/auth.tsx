@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { isSupabaseConfigured, supabase } from './supabase';
+import { isSupabaseConfigured, requireSupabase } from './supabase';
 
 type AuthUser = {
   id: string;
@@ -24,6 +24,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 async function readUser(): Promise<AuthUser | null> {
   try {
     if (!isSupabaseConfigured()) return null;
+    const supabase = requireSupabase();
     const session = await supabase.auth.getSession();
     const user = session.data.session?.user;
     if (!user?.email) return null;
@@ -57,6 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
     }
 
+    const supabase = requireSupabase();
     const { data } = supabase.auth.onAuthStateChange(() => {
       readUser().then((next) => {
         if (!isMounted) return;
@@ -90,6 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!isSupabaseConfigured()) {
       return { ok: false, error: 'Supabase is not configured.' };
     }
+    const supabase = requireSupabase();
     const result = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
@@ -112,6 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsAdminOpen(false);
       return;
     }
+    const supabase = requireSupabase();
     supabase.auth.signOut().finally(() => {
       setUser(null);
       setIsAdminOpen(false);

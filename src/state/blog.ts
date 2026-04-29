@@ -1,5 +1,5 @@
 import seedData from '../data/blogSeed.json';
-import { isSupabaseConfigured, supabase } from './supabase';
+import { isSupabaseConfigured, requireSupabase } from './supabase';
 
 export type BlogPost = {
   id: string;
@@ -73,6 +73,7 @@ function mapRowToPost(row: BlogPostRow): BlogPost {
 
 export async function fetchPublishedBlogPosts(): Promise<BlogPost[]> {
   if (!isSupabaseConfigured()) return [];
+  const supabase = requireSupabase();
   const { data, error } = await supabase
     .from('blog_posts')
     .select('*')
@@ -86,6 +87,7 @@ export async function fetchBlogPostById(id: string): Promise<BlogPost | null> {
   if (!isSupabaseConfigured()) {
     return seedPosts.find((p) => p.id === id) ?? null;
   }
+  const supabase = requireSupabase();
 
   if (id.startsWith('seed_')) {
     const { data, error } = await supabase
@@ -110,6 +112,7 @@ export async function fetchBlogPostById(id: string): Promise<BlogPost | null> {
 
 export async function createBlogPost(post: Omit<BlogPost, 'id' | 'createdAt'>): Promise<{ ok: true; post: BlogPost } | { ok: false; error: string }> {
   if (!isSupabaseConfigured()) return { ok: false, error: 'Supabase is not configured.' };
+  const supabase = requireSupabase();
   const { data, error } = await supabase
     .from('blog_posts')
     .insert({
@@ -134,6 +137,7 @@ export async function upsertBlogPostByLegacyId(
   post: Omit<BlogPost, 'id' | 'createdAt'>,
 ): Promise<{ ok: true; post: BlogPost } | { ok: false; error: string }> {
   if (!isSupabaseConfigured()) return { ok: false, error: 'Supabase is not configured.' };
+  const supabase = requireSupabase();
   const { data, error } = await supabase
     .from('blog_posts')
     .upsert(
@@ -161,6 +165,7 @@ export async function updateBlogPost(
   post: Omit<BlogPost, 'id' | 'createdAt'>,
 ): Promise<{ ok: true; post: BlogPost } | { ok: false; error: string }> {
   if (!isSupabaseConfigured()) return { ok: false, error: 'Supabase is not configured.' };
+  const supabase = requireSupabase();
   const { data, error } = await supabase
     .from('blog_posts')
     .update({
@@ -182,6 +187,7 @@ export async function updateBlogPost(
 
 export async function removeBlogPost(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
   if (!isSupabaseConfigured()) return { ok: false, error: 'Supabase is not configured.' };
+  const supabase = requireSupabase();
   const { error } = await supabase.from('blog_posts').delete().eq('id', id);
   if (error) return { ok: false, error: error.message || 'Failed to delete post.' };
   return { ok: true };
@@ -189,6 +195,7 @@ export async function removeBlogPost(id: string): Promise<{ ok: true } | { ok: f
 
 export async function uploadBlogImage(file: File): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
   if (!isSupabaseConfigured()) return { ok: false, error: 'Supabase is not configured.' };
+  const supabase = requireSupabase();
   const nameParts = file.name.split('.');
   const ext = nameParts.length > 1 ? nameParts[nameParts.length - 1] : 'png';
   const path = `${crypto.randomUUID()}.${ext}`;
