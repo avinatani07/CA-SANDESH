@@ -23,7 +23,8 @@ const Hero = () => {
           {/* Firm Name */}
           <motion.h1
             initial={{ opacity: 0, x: -60 }}
-            animate={{ opacity: 1, x: 0 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: false, amount: 0.6 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 font-heading"
           >
