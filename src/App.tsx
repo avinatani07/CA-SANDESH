@@ -14,15 +14,38 @@ function App() {
   const [postId, setPostId] = useState<string | null>(null);
 
   useEffect(() => {
+    const scrollToHash = () => {
+      const targetId = window.location.hash.replace('#', '').trim();
+      if (!targetId) return;
+      let attempts = 0;
+      const tryScroll = () => {
+        attempts += 1;
+        const el = document.getElementById(targetId);
+        if (!el) {
+          if (attempts < 20) window.setTimeout(tryScroll, 50);
+          return;
+        }
+        const top = el.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top, left: 0, behavior: 'auto' });
+      };
+      window.setTimeout(tryScroll, 50);
+    };
+
     const handleUrlChange = () => {
       const searchParams = new URLSearchParams(window.location.search);
-      setPostId(searchParams.get('post'));
+      const nextPostId = searchParams.get('post');
+      setPostId(nextPostId);
+      if (!nextPostId) window.setTimeout(scrollToHash, 0);
     };
 
     handleUrlChange();
 
     window.addEventListener('popstate', handleUrlChange);
-    return () => window.removeEventListener('popstate', handleUrlChange);
+    window.addEventListener('hashchange', handleUrlChange);
+    return () => {
+      window.removeEventListener('popstate', handleUrlChange);
+      window.removeEventListener('hashchange', handleUrlChange);
+    };
   }, []);
 
   if (postId) {

@@ -345,7 +345,10 @@ export default function BlogPostPage({ postId }: { postId: string }) {
           <section className="mt-16 border-t border-neutral-100 pt-10">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-2xl font-bold text-neutral-900 font-heading">Related insights</h2>
-              <a href="/#blog" className="text-sm font-semibold text-primary-600 hover:text-accent-600 transition-colors">
+              <a
+                href="/#blog"
+                className="text-sm font-semibold text-primary-600 hover:text-accent-600 transition-colors"
+              >
                 View all
               </a>
             </div>
